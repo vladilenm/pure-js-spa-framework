@@ -1,43 +1,29 @@
-import { router } from '../tools/router'
-import { wfm } from '../tools/util'
+import { initComponents } from './component/init-components'
+import { initRouting } from './routing/init-routing'
+import { initDirectives } from './directives/init-directives'
+import { EventEmitter } from '../tools/event-emitter'
+import { initPipes } from './pipes/init-pipes'
 
 export class Module {
   constructor(config) {
     this.components = config.components
     this.bootstrapComponent = config.bootstrap
     this.routes = config.routes
+    this.directives = config.directives
+    this.pipes = config.pipes
+
+    this.dispatcher = new EventEmitter()
   }
 
   start() {
-    this.initComponents()
-    if (this.routes) this.initRoutes()
-  }
+    initPipes(this.pipes)
+    initComponents(this.bootstrapComponent, this.components)
+    initRouting(this.routes, this.dispatcher)
+    initDirectives(this.directives)
 
-  initComponents() {
-    this.bootstrapComponent.render()
-    this.components.forEach(this.renderComponent.bind(this))
-  }
-
-  initRoutes() {
-    window.addEventListener('hashchange', this.renderRoute.bind(this))
-    this.renderRoute()
-  }
-
-  renderRoute() {
-    let url = router.getUrl()
-    let route = this.routes.find(r => r.path === url)
-
-    if (wfm.isUndefined(route)) {
-      route = this.routes.find(r => r.path === '**')
-    }
-
-    document.querySelector('router-outlet').innerHTML = `<${route.component.selector}></${route.component.selector}>`
-    this.renderComponent(route.component)
-  }
-
-  renderComponent(c) {
-    if (!wfm.isUndefined(c.onInit)) c.onInit()
-    c.render()
-    if (!wfm.isUndefined(c.afterInit)) c.afterInit()
+    this.dispatcher.on('routing.change-page', () => {
+      initDirectives(this.directives)
+    })
   }
 }
+
