@@ -63,8 +63,7 @@ function compileTemplate(template, data) {
 function initStyles(styles) {
   if (_.isUndefined(styles)) return
 
-  let style = $(document.createElement('style'))
-  style.html(styles)
+  let style = $(document.createElement('style')).html(styles)
   $(document.head).append(style)
 }
 
