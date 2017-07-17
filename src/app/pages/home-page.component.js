@@ -1,11 +1,11 @@
-import { WFMComponent, router } from 'framework'
+import { WFMComponent, router, http, _ } from 'framework'
 
 class HomePageComponent extends WFMComponent {
   constructor(config) {
     super(config)
 
     this.data = {
-      title: 'Главная страница работает!!!',
+      title: 'Loading....',
       linkTitle: 'Перейти на другую страницу'
     }
   }
@@ -19,6 +19,15 @@ class HomePageComponent extends WFMComponent {
   goToTabs(event) {
     event.preventDefault()
     router.navigate('tabs')
+  }
+
+  afterInit() {
+    http.get('http://localhost:3000/title').then(title => {
+      _.delay(2000).then(() => {
+        this.data.title = title.appName
+        this.render()
+      })
+    })
   }
 }
 
